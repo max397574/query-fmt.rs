@@ -30,6 +30,9 @@ fn main() {
         if cursor.node().kind() == "predicate" {
             output.push_str("\n  ");
         }
+        if cursor.node().kind() == "capture" {
+            output.push(' ');
+        }
         let parent = cursor.node().parent();
         if let Some(node) = parent {
             if node.kind() == "parameters" {

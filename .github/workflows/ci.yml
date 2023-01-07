@@ -14,7 +14,7 @@ on:
         id: release
         with:
           release-type: simple
-          package-name: tmpfile.nvim
+          package-name: query-fmt.rs
       - uses: actions/checkout@v2
       - name: tag stable versions
         if: ${{ steps.release.outputs.release_created }}

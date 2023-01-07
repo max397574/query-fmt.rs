@@ -8,98 +8,51 @@ fn main() {
 
     let language = unsafe { tree_sitter_query() };
     parser.set_language(language).unwrap();
-    let source_code = "(block)@test
-(mod_item
- name: (identifier)@namespace)
-";
+    let source_code = "(block)@test(mod_item name: (identifier)@namespace)
+(scoped_identifier(scoped_identifier path: (identifier) @rust_path) (#set! conceal \"\"))";
 
     let tree = parser.parse(source_code, None).unwrap();
-    let root_node = tree.root_node();
+    // let root_node = tree.root_node();
     let mut output = String::new();
-    for child in root_node.children(&mut tree.walk()) {
-        println!("kind:{}", child.kind());
-        println!("text:{}", child.utf8_text(source_code.as_bytes()).unwrap());
-        if child.kind() == "field_definition" {
-            println!("got it");
-            output.push_str("\n  ")
+    let mut reached_root = false;
+    let mut cursor = tree.walk();
+    let mut nesting_level = 0;
+    while !reached_root {
+        // TODO: space in predicates
+        // TODO: newlines
+        if nesting_level == 1 {
+            output.push_str("\n\n")
         }
-        if child.child_count() == 0 {
-            output.push_str(child.utf8_text(source_code.as_bytes()).unwrap());
+        if cursor.node().kind() == "field_definition" {
+            output.push_str("\n  ");
         }
-        for child_child in child.children(&mut tree.walk()) {
-            println!("  kind:{}", child_child.kind());
-            println!(
-                "  text:{}",
-                child_child.utf8_text(source_code.as_bytes()).unwrap()
-            );
-            println!("{}", child.kind() == "field_definition");
-            println!("==========");
-            if child.kind() == "field_definition" {
-                println!("got it");
-                output.push_str("\n  ")
+        if cursor.node().child_count() == 0 && cursor.node().kind() != "\""
+            || cursor.node().kind() == "string"
+        {
+            output.push_str(cursor.node().utf8_text(source_code.as_bytes()).unwrap());
+        }
+        if cursor.node().kind() == ":" {
+            output.push(' ');
+        }
+        if cursor.goto_first_child() {
+            nesting_level += 1;
+            continue;
+        }
+        if cursor.goto_next_sibling() {
+            continue;
+        }
+        let mut retracing = true;
+        while retracing {
+            if !cursor.goto_parent() {
+                retracing = false;
+                reached_root = true;
+            } else {
+                nesting_level -= 1;
             }
-            if child_child.child_count() == 0 {
-                output.push_str(child_child.utf8_text(source_code.as_bytes()).unwrap());
-            }
-            for child_child_child in child_child.children(&mut tree.walk()) {
-                println!("    kind:{}", child_child_child.kind());
-                println!(
-                    "    text:{}",
-                    child_child_child.utf8_text(source_code.as_bytes()).unwrap()
-                );
-                if child.kind() == "field_definition" {
-                    println!("got it");
-                    output.push_str("\n  ")
-                }
-                if child_child_child.child_count() == 0 {
-                    output.push_str(child_child_child.utf8_text(source_code.as_bytes()).unwrap());
-                }
-                for child_child_child_child in child_child_child.children(&mut tree.walk()) {
-                    println!("      kind:{}", child_child_child_child.kind());
-                    println!(
-                        "      text:{}",
-                        child_child_child_child
-                            .utf8_text(source_code.as_bytes())
-                            .unwrap()
-                    );
-                    if child.kind() == "field_definition" {
-                        println!("got it");
-                        output.push_str("\n  ")
-                    }
-                    if child_child_child_child.child_count() == 0 {
-                        output.push_str(
-                            child_child_child_child
-                                .utf8_text(source_code.as_bytes())
-                                .unwrap(),
-                        );
-                    }
-                    for child_child_child_child_child in
-                        child_child_child_child.children(&mut tree.walk())
-                    {
-                        println!("        kind:{}", child_child_child_child_child.kind());
-                        println!(
-                            "        text:{}",
-                            child_child_child_child_child
-                                .utf8_text(source_code.as_bytes())
-                                .unwrap()
-                        );
-                        if child.kind() == "field_definition" {
-                            println!("got it");
-                            output.push_str("\n  ")
-                        }
-                        if child_child_child_child_child.child_count() == 0 {
-                            output.push_str(
-                                child_child_child_child_child
-                                    .utf8_text(source_code.as_bytes())
-                                    .unwrap(),
-                            );
-                        }
-                    }
-                }
+            if cursor.goto_next_sibling() {
+                retracing = false;
             }
         }
-        output.push('\n');
-        output.push('\n');
     }
     println!("{output}");
 }

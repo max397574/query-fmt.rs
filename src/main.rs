@@ -27,6 +27,9 @@ fn main() {
         if cursor.node().kind() == "field_definition" {
             output.push_str("\n  ");
         }
+        if cursor.node().kind() == "predicate" {
+            output.push_str("\n  ");
+        }
         let parent = cursor.node().parent();
         if let Some(node) = parent {
             if node.kind() == "parameters" {

@@ -9,7 +9,8 @@ fn main() {
     let language = unsafe { tree_sitter_query() };
     parser.set_language(language).unwrap();
     let source_code = "(block)@test(mod_item name: (identifier)@namespace)
-(scoped_identifier(scoped_identifier path: (identifier) @rust_path) (#set! conceal \"\"))";
+(scoped_identifier(scoped_identifier path: (identifier) @rust_path) (#set! conceal \"\"))((field_identifier) @constant (#lua-match? @constant \"^[A-Z]\"))
+";
 
     let tree = parser.parse(source_code, None).unwrap();
     // let root_node = tree.root_node();

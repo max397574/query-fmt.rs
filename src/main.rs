@@ -26,6 +26,12 @@ fn main() {
         if cursor.node().kind() == "field_definition" {
             output.push_str("\n  ");
         }
+        let parent = cursor.node().parent();
+        if let Some(node) = parent {
+            if node.kind() == "parameters" {
+                output.push(' ')
+            }
+        }
         if cursor.node().child_count() == 0 && cursor.node().kind() != "\""
             || cursor.node().kind() == "string"
         {

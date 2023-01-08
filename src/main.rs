@@ -74,6 +74,14 @@ fn main() {
             output.push_str(&"  ".repeat(indent_level));
         }
 
+        if cursor.node().kind() == "identifier"
+            && check_parent("anonymous_node", cursor.node())
+            && !check_parent("list", cursor.node().parent().unwrap())
+        {
+            output.push('\n');
+            output.push_str(&"  ".repeat(indent_level));
+        }
+
         if check_parent("parameters", cursor.node()) {
             output.push(' ')
         }
@@ -89,6 +97,12 @@ fn main() {
             output.push_str(cursor.node().utf8_text(source_code.as_bytes()).unwrap());
         }
         if cursor.node().kind() == "anonymous_node" && check_parent("list", cursor.node()) {
+            output.push_str(cursor.node().utf8_text(source_code.as_bytes()).unwrap());
+        }
+        if cursor.node().kind() == "identifier"
+            && check_parent("anonymous_node", cursor.node())
+            && !check_parent("list", cursor.node().parent().unwrap())
+        {
             output.push_str(cursor.node().utf8_text(source_code.as_bytes()).unwrap());
         }
         if cursor.node().kind() == ":" {

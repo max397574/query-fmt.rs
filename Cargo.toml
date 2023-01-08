@@ -11,6 +11,7 @@ name = "query-fmt"
 path = "src/main.rs"
 
 [dependencies]
+clap = { version = "4.0.32", features = ["derive"] }
 tree-sitter = "0.20.9"
 
 [build-dependencies]

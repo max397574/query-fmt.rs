@@ -1,5 +1,20 @@
 use tree_sitter::{Language, Node, Parser};
 
+use clap::Parser as ClapParser;
+
+/// A formatter for tree-sitter queries
+#[derive(ClapParser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Name of the file to format
+    #[arg(value_name = "file")]
+    file: String,
+
+    /// If you want to use a custom config file
+    #[arg(long)]
+    config_file: Option<String>,
+}
+
 fn check_parent(parent_kind: &str, node: Node) -> bool {
     let parent = node.parent();
     if let Some(parent_node) = parent {
@@ -11,6 +26,10 @@ fn check_parent(parent_kind: &str, node: Node) -> bool {
 }
 
 fn main() {
+    let args = Args::parse();
+    println!("The file: {}", args.file);
+    println!("The config: {}", args.config_file.unwrap_or_default());
+
     let mut parser = Parser::new();
     extern "C" {
         fn tree_sitter_query() -> Language;

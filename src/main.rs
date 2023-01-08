@@ -28,17 +28,25 @@ fn main() {
     let mut reached_root = false;
     let mut cursor = tree.walk();
     let mut nesting_level = 0;
+    let mut indent_level = 0;
     while !reached_root {
-        // TODO: space in predicates
         // TODO: newlines
+        if cursor.node().kind() == "(" {
+            indent_level += 1;
+        }
+        if cursor.node().kind() == ")" {
+            indent_level -= 1;
+        }
         if nesting_level == 1 {
             output.push_str("\n\n")
         }
         if cursor.node().kind() == "field_definition" {
-            output.push_str("\n  ");
+            output.push('\n');
+            output.push_str(&"  ".repeat(indent_level));
         }
         if cursor.node().kind() == "predicate" {
-            output.push_str("\n  ");
+            output.push('\n');
+            output.push_str(&"  ".repeat(indent_level));
         }
         if cursor.node().kind() == "capture" {
             output.push(' ');
@@ -46,6 +54,12 @@ fn main() {
         if check_parent("parameters", cursor.node()) {
             output.push(' ')
         }
+
+        if check_parent("named_node", cursor.node()) && cursor.node().kind() == "named_node" {
+            output.push('\n');
+            output.push_str(&"  ".repeat(indent_level));
+        }
+
         if cursor.node().child_count() == 0 && cursor.node().kind() != "\""
             || cursor.node().kind() == "string"
         {

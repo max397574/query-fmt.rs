@@ -1,5 +1,8 @@
 use tree_sitter::{Language, Node, Parser};
 
+use std::fs::File;
+use std::io::prelude::*;
+
 use clap::Parser as ClapParser;
 
 /// A formatter for tree-sitter queries
@@ -27,9 +30,6 @@ fn check_parent(parent_kind: &str, node: Node) -> bool {
 
 fn main() {
     let args = Args::parse();
-    println!("The file: {}", args.file);
-    println!("The config: {}", args.config_file.unwrap_or_default());
-
     let mut parser = Parser::new();
     extern "C" {
         fn tree_sitter_query() -> Language;
@@ -37,15 +37,12 @@ fn main() {
 
     let language = unsafe { tree_sitter_query() };
     parser.set_language(language).unwrap();
-    let source_code = "(block)@test(mod_item name: (identifier)@namespace)
-(scoped_identifier(scoped_identifier path: (identifier) @rust_path) (#set! conceal \"\"))((field_identifier) @constant (#lua-match? @constant \"^[A-Z]\"))
-\"=\" @something
-(\"=\") @something
-(helloworld
-  \"hello\"
-  (mynode)
-  \"world\")
-[\"(\" \")\" \"[\" \"]\" \"{\" \"}\"]  @punctuation.bracket";
+
+    let mut file = File::open(args.file).expect("Unable to open the file");
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)
+        .expect("Unable to read the file");
+    let source_code = &contents;
 
     let tree = parser.parse(source_code, None).unwrap();
     // let root_node = tree.root_node();

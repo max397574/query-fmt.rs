@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/max397574/query-fmt.rs/compare/v1.1.0...v1.2.0) (2023-01-08)
+
+
+### Features
+
+* allow passing arguments ([82715b2](https://github.com/max397574/query-fmt.rs/commit/82715b22c9545102e9b1d2f8edb612eb5f2473a0))
+* take input from file ([189e70a](https://github.com/max397574/query-fmt.rs/commit/189e70aac608b0604bf6503fdfcaac64b1279835))
+
+
+### Bug Fixes
+
+* include folder in cargo.toml ([5a81b35](https://github.com/max397574/query-fmt.rs/commit/5a81b3591c4b782ba62fc67a124b704f41d89a18))
+
 ## [1.1.0](https://github.com/max397574/query-fmt.rs/compare/v1.0.0...v1.1.0) (2023-01-08)
 
 

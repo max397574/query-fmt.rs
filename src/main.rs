@@ -48,7 +48,7 @@ fn main() {
             output.push('\n');
             output.push_str(&"  ".repeat(indent_level));
         }
-        if cursor.node().kind() == "capture" {
+        if cursor.node().kind() == "capture" && !check_parent("parameters", cursor.node()) {
             output.push(' ');
         }
         if check_parent("parameters", cursor.node()) {

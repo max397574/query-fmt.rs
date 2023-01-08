@@ -36,29 +36,34 @@ fn main() {
     let mut nesting_level = 0;
     let mut indent_level = 0;
     while !reached_root {
-        // TODO: newlines
-        if cursor.node().kind() == "(" {
-            indent_level += 1;
+        match cursor.node().kind() {
+            "(" => {
+                indent_level += 1;
+            }
+            ")" => {
+                indent_level -= 1;
+            }
+            "[" => {
+                indent_level += 1;
+            }
+            "]" => {
+                indent_level -= 1;
+            }
+            _ => {}
         }
-        if cursor.node().kind() == ")" {
-            indent_level -= 1;
-        }
-        if cursor.node().kind() == "[" {
-            indent_level += 1;
-        }
-        if cursor.node().kind() == "]" {
-            indent_level -= 1;
+        match cursor.node().kind() {
+            "field_definition" => {
+                output.push('\n');
+                output.push_str(&"  ".repeat(indent_level));
+            }
+            "predicate" => {
+                output.push('\n');
+                output.push_str(&"  ".repeat(indent_level));
+            }
+            _ => {}
         }
         if nesting_level == 1 {
             output.push_str("\n\n")
-        }
-        if cursor.node().kind() == "field_definition" {
-            output.push('\n');
-            output.push_str(&"  ".repeat(indent_level));
-        }
-        if cursor.node().kind() == "predicate" {
-            output.push('\n');
-            output.push_str(&"  ".repeat(indent_level));
         }
         if cursor.node().kind() == "capture" && !check_parent("parameters", cursor.node()) {
             output.push(' ');
@@ -77,6 +82,7 @@ fn main() {
         if cursor.node().kind() == "identifier"
             && check_parent("anonymous_node", cursor.node())
             && !check_parent("list", cursor.node().parent().unwrap())
+            && !check_parent("grouping", cursor.node().parent().unwrap())
         {
             output.push('\n');
             output.push_str(&"  ".repeat(indent_level));

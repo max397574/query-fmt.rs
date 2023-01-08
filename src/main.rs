@@ -20,7 +20,13 @@ fn main() {
     parser.set_language(language).unwrap();
     let source_code = "(block)@test(mod_item name: (identifier)@namespace)
 (scoped_identifier(scoped_identifier path: (identifier) @rust_path) (#set! conceal \"\"))((field_identifier) @constant (#lua-match? @constant \"^[A-Z]\"))
-";
+\"=\" @something
+(\"=\") @something
+(helloworld
+  \"hello\"
+  (mynode)
+  \"world\")
+[\"(\" \")\" \"[\" \"]\" \"{\" \"}\"]  @punctuation.bracket";
 
     let tree = parser.parse(source_code, None).unwrap();
     // let root_node = tree.root_node();
@@ -37,6 +43,12 @@ fn main() {
         if cursor.node().kind() == ")" {
             indent_level -= 1;
         }
+        if cursor.node().kind() == "[" {
+            indent_level += 1;
+        }
+        if cursor.node().kind() == "]" {
+            indent_level -= 1;
+        }
         if nesting_level == 1 {
             output.push_str("\n\n")
         }
@@ -51,6 +63,17 @@ fn main() {
         if cursor.node().kind() == "capture" && !check_parent("parameters", cursor.node()) {
             output.push(' ');
         }
+
+        if cursor.node().kind() == "anonymous_node" && check_parent("list", cursor.node()) {
+            output.push('\n');
+            output.push_str(&"  ".repeat(indent_level));
+        }
+
+        if cursor.node().kind() == "]" && check_parent("list", cursor.node()) {
+            output.push('\n');
+            output.push_str(&"  ".repeat(indent_level));
+        }
+
         if check_parent("parameters", cursor.node()) {
             output.push(' ')
         }
@@ -63,6 +86,9 @@ fn main() {
         if cursor.node().child_count() == 0 && cursor.node().kind() != "\""
             || cursor.node().kind() == "string"
         {
+            output.push_str(cursor.node().utf8_text(source_code.as_bytes()).unwrap());
+        }
+        if cursor.node().kind() == "anonymous_node" && check_parent("list", cursor.node()) {
             output.push_str(cursor.node().utf8_text(source_code.as_bytes()).unwrap());
         }
         if cursor.node().kind() == ":" {

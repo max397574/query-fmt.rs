@@ -1,4 +1,14 @@
-use tree_sitter::{Language, Parser};
+use tree_sitter::{Language, Node, Parser};
+
+fn check_parent(parent_kind: &str, node: Node) -> bool {
+    let parent = node.parent();
+    if let Some(parent_node) = parent {
+        if parent_node.kind() == parent_kind {
+            return true;
+        }
+    }
+    false
+}
 
 fn main() {
     let mut parser = Parser::new();
@@ -33,11 +43,8 @@ fn main() {
         if cursor.node().kind() == "capture" {
             output.push(' ');
         }
-        let parent = cursor.node().parent();
-        if let Some(node) = parent {
-            if node.kind() == "parameters" {
-                output.push(' ')
-            }
+        if check_parent("parameters", cursor.node()) {
+            output.push(' ')
         }
         if cursor.node().child_count() == 0 && cursor.node().kind() != "\""
             || cursor.node().kind() == "string"

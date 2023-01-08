@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.1.0](https://github.com/max397574/query-fmt.rs/compare/v1.0.0...v1.1.0) (2023-01-08)
+
+
+### Features
+
+* add space before captures ([dbb20dd](https://github.com/max397574/query-fmt.rs/commit/dbb20dd6b382566edcb64159914606efc5a2680c))
+* add support for lists ([ac5effd](https://github.com/max397574/query-fmt.rs/commit/ac5effdf28998e7e1e9fcc97f9f74f97ad23f21c))
+* better newlines and indent ([67ce1db](https://github.com/max397574/query-fmt.rs/commit/67ce1db6febce471ca628c195edd89d202e908ca))
+* some more edge cases with anonymous nodes ([e65cad1](https://github.com/max397574/query-fmt.rs/commit/e65cad10edb497ff86e461603a4b4ebe5e2d43b4))
+
+
+### Bug Fixes
+
+* double space in predicate with capture ([7407151](https://github.com/max397574/query-fmt.rs/commit/7407151d54a924b600f5d228d6b5552b29611f4c))
+
 ## 1.0.0 (2023-01-07)
 
 

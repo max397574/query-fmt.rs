@@ -45,7 +45,7 @@ fn main() {
     let source_code = &contents;
 
     let tree = parser.parse(source_code, None).unwrap();
-    // let root_node = tree.root_node();
+    let mut comment_before = false;
     let mut output = String::new();
     let mut reached_root = false;
     let mut cursor = tree.walk();
@@ -78,8 +78,19 @@ fn main() {
             }
             _ => {}
         }
+        if cursor.node().kind() == "comment" && !comment_before {
+            output.push('\n');
+        }
+        if cursor.node().kind() == "comment" {
+            comment_before = true;
+        } else {
+            comment_before = false;
+        }
         if nesting_level == 1 {
-            output.push_str("\n\n")
+            output.push('\n');
+            if cursor.node().kind() != "comment" {
+                output.push('\n');
+            }
         }
         if cursor.node().kind() == "capture" && !check_parent("parameters", cursor.node()) {
             output.push(' ');

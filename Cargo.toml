@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "A formatter for tree-sitter queries"
+include = ["tree-sitter-query"]
 
 [dependencies]
 tree-sitter = "0.20.9"

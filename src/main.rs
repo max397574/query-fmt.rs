@@ -54,10 +54,10 @@ fn main() {
     while !reached_root {
         match cursor.node().kind() {
             "(" => {
-                indent_level += 1;
+                indent_level += 2;
             }
             ")" => {
-                indent_level -= 1;
+                indent_level -= 2;
             }
             "[" => {
                 indent_level += 1;
@@ -70,11 +70,11 @@ fn main() {
         match cursor.node().kind() {
             "field_definition" => {
                 output.push('\n');
-                output.push_str(&"  ".repeat(indent_level));
+                output.push_str(&" ".repeat(indent_level));
             }
             "predicate" => {
                 output.push('\n');
-                output.push_str(&"  ".repeat(indent_level));
+                output.push_str(&" ".repeat(indent_level));
             }
             _ => {}
         }
@@ -98,12 +98,12 @@ fn main() {
 
         if cursor.node().kind() == "anonymous_node" && check_parent("list", cursor.node()) {
             output.push('\n');
-            output.push_str(&"  ".repeat(indent_level));
+            output.push_str(&" ".repeat(indent_level));
         }
 
         if cursor.node().kind() == "]" && check_parent("list", cursor.node()) {
             output.push('\n');
-            output.push_str(&"  ".repeat(indent_level));
+            output.push_str(&" ".repeat(indent_level));
         }
 
         if cursor.node().kind() == "identifier"
@@ -112,7 +112,7 @@ fn main() {
             && !check_parent("grouping", cursor.node().parent().unwrap())
         {
             output.push('\n');
-            output.push_str(&"  ".repeat(indent_level));
+            output.push_str(&" ".repeat(indent_level));
         }
 
         if check_parent("parameters", cursor.node()) {
@@ -121,7 +121,7 @@ fn main() {
 
         if check_parent("named_node", cursor.node()) && cursor.node().kind() == "named_node" {
             output.push('\n');
-            output.push_str(&"  ".repeat(indent_level));
+            output.push_str(&" ".repeat(indent_level));
         }
 
         if cursor.node().child_count() == 0 && cursor.node().kind() != "\""

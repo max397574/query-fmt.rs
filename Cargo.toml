@@ -13,6 +13,22 @@ path = "src/main.rs"
 [dependencies]
 clap = { version = "4.0.32", features = ["derive"] }
 tree-sitter = "0.20.9"
+toml = "0.5.10"
 
 [build-dependencies]
 cc="*"
+
+[target.'cfg(windows)'.dependencies]
+zip = "0.5"
+winreg = "0.10.1"
+
+[target.'cfg(unix)'.dependencies]
+tar = "0.4"
+flate2 = "1.0"
+
+[profile.optimized]
+inherits = "release"
+opt-level = "z"
+strip = true
+lto = true
+codegen-units = 1

@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.3.0](https://github.com/max397574/query-fmt.rs/compare/v1.2.0...v1.3.0) (2023-01-09)
+
+
+### Features
+
+* **ci:** added build workflow ([e4ade34](https://github.com/max397574/query-fmt.rs/commit/e4ade34bd588e70162af0793b1cc5e92f4f9dc3e))
+* **ci:** use latest checkout action ([0865b9d](https://github.com/max397574/query-fmt.rs/commit/0865b9d121b2ef035c410ef445342e648ca885c3))
+* start with config module ([1811d67](https://github.com/max397574/query-fmt.rs/commit/1811d671ddc13607fa9382b943e089fd9fdd19e3))
+
+
+### Bug Fixes
+
+* **ci:** add stuff to `cargo.toml` ([d9d5c3b](https://github.com/max397574/query-fmt.rs/commit/d9d5c3b0185e97896cc3382f6a27a265808b2853))
+* **ci:** checkout submodules ([207b12d](https://github.com/max397574/query-fmt.rs/commit/207b12df5cbc3754f509974ac9afb72604549c48))
+* **ci:** remove windows build for now ([aa942f7](https://github.com/max397574/query-fmt.rs/commit/aa942f7b06072b9b8837fcb3c47d03ffe639e28c))
+* correctly format comments ([5b45802](https://github.com/max397574/query-fmt.rs/commit/5b45802aa0ffb1d732a2e122171c553fe590e575))
+* **windows ci:** add missing file ([84e0f35](https://github.com/max397574/query-fmt.rs/commit/84e0f3561637a8ed225a87215ace21a8bbe79581))
+
 ## [1.2.0](https://github.com/max397574/query-fmt.rs/compare/v1.1.0...v1.2.0) (2023-01-08)
 
 

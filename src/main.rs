@@ -1,5 +1,3 @@
-mod config;
-
 use tree_sitter::{Language, Node, Parser};
 
 use std::fs::File;

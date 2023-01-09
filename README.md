@@ -14,7 +14,7 @@
 
 ## 📦 Installation
 ### Download release (coming soon)
-1. Download bob-{platform}-x86_64.zip
+1. Download query-fmt-{platform}-x86_64.zip
 2. Unzip it
 3. Run it with query-fmt
 

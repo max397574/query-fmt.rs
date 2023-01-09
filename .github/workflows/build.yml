@@ -97,38 +97,38 @@ jobs:
             retention-days: 7
 
 
-  # windows:
-  #   runs-on: windows-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         submodules: recursive
-  #     - name: Install Rust
-  #       uses: actions-rs/toolchain@v1
-  #       with:
-  #         toolchain: stable
-  #         profile: minimal
-  #         override: true
-  #     - uses: Swatinem/rust-cache@v1
-  #     - name: Build query-fmt
-  #       uses: actions-rs/cargo@v1
-  #       with:
-  #         command: build
-  #         args: --profile optimized
-  #     - name: Check lints
-  #       uses: actions-rs/cargo@v1
-  #       with:
-  #         command: clippy
-  #         args: --verbose -- -D warnings
-  #     - name: Setup query-fmt build directory
-  #       run: |
-  #         mkdir build
-  #         copy .\\bin\\vcruntime140.dll .\\build
-  #         copy .\\target\\optimized\\query-fmt.exe .\\build
-  #     - name: Upload query-fmt Windows build
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: "query-fmt-windows-x86_64"
-  #         path: "build"
-  #         if-no-files-found: error
-  #         retention-days: 7
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - uses: Swatinem/rust-cache@v1
+      - name: Build query-fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --profile optimized
+      - name: Check lints
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --verbose -- -D warnings
+      - name: Setup query-fmt build directory
+        run: |
+          mkdir build
+          copy .\\bin\\vcruntime140.dll .\\build
+          copy .\\target\\optimized\\query-fmt.exe .\\build
+      - name: Upload query-fmt Windows build
+        uses: actions/upload-artifact@v2
+        with:
+          name: "query-fmt-windows-x86_64"
+          path: "build"
+          if-no-files-found: error
+          retention-days: 7

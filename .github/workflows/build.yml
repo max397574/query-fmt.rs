@@ -9,6 +9,7 @@ jobs:
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
+          submodules: recursive
           toolchain: stable
           profile: minimal
           override: true
@@ -38,6 +39,7 @@ jobs:
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
+          submodules: recursive
           toolchain: stable
           profile: minimal
           override: true
@@ -67,6 +69,7 @@ jobs:
         - name: Install Rust
           uses: actions-rs/toolchain@v1
           with:
+            submodules: recursive
             toolchain: stable
             target: aarch64-apple-darwin
             profile: minimal
@@ -98,6 +101,7 @@ jobs:
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
+          submodules: recursive
           toolchain: stable
           profile: minimal
           override: true

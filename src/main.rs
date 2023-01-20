@@ -28,6 +28,14 @@ fn check_parent(parent_kind: &str, node: Node) -> bool {
     false
 }
 
+fn get_len(source: &str) -> usize {
+    source
+        .chars()
+        .filter(|char| char != &'\n' && char != &' ' && char != &'\t' && char != &'\r')
+        .collect::<Vec<char>>()
+        .len()
+}
+
 fn main() {
     let args = Args::parse();
     let mut parser = Parser::new();
@@ -38,11 +46,12 @@ fn main() {
     let language = unsafe { tree_sitter_query() };
     parser.set_language(language).unwrap();
 
-    let mut file = File::open(args.file).expect("Unable to open the file");
+    let mut file = File::open(args.file.clone()).expect("Unable to open the file");
     let mut contents = String::new();
     file.read_to_string(&mut contents)
         .expect("Unable to read the file");
     let source_code = &contents;
+    let original_len = get_len(&source_code);
 
     let tree = parser.parse(source_code, None).unwrap();
     let mut comment_before = false;
@@ -161,5 +170,15 @@ fn main() {
             }
         }
     }
-    println!("{output}");
+    let mut file = File::create(args.file).expect("Unable to open the file");
+    if get_len(&output) != original_len {
+        println!(
+            "There was an error parsing your code.
+Not applying formatting.
+Open an issue."
+        );
+    } else {
+        writeln!(&mut file, "{}",output).unwrap();
+    }
+    // println!("{output}");
 }

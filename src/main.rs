@@ -16,6 +16,10 @@ struct Args {
     /// If you want to use a custom config file
     #[arg(long)]
     config_file: Option<String>,
+
+    /// Preview the formatted file
+    #[arg(short, long)]
+    preview: bool,
 }
 
 fn check_parent(parent_kind: &str, node: Node) -> bool {
@@ -170,7 +174,6 @@ fn main() {
             }
         }
     }
-    let mut file = File::create(args.file).expect("Unable to open the file");
     if get_len(&output) != original_len {
         println!(
             "There was an error parsing your code.
@@ -178,7 +181,11 @@ Not applying formatting.
 Open an issue."
         );
     } else {
-        writeln!(&mut file, "{}", output.trim()).unwrap();
+        if args.preview {
+            println!("{output}");
+        } else if !args.preview {
+            let mut new_file = File::create(args.file).expect("Unable to open the file");
+            writeln!(&mut new_file, "{}", output.trim()).unwrap();
+        }
     }
-    // println!("{output}");
 }

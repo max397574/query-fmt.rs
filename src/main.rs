@@ -178,7 +178,7 @@ Not applying formatting.
 Open an issue."
         );
     } else {
-        writeln!(&mut file, "{}",output).unwrap();
+        writeln!(&mut file, "{}", output.trim()).unwrap();
     }
     // println!("{output}");
 }

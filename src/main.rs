@@ -1,7 +1,8 @@
 use tree_sitter::{Language, Node, Parser};
 
-use std::fs::File;
+use std::fs::{read_dir, File};
 use std::io::prelude::*;
+use std::path::Path;
 
 use clap::Parser as ClapParser;
 
@@ -42,6 +43,7 @@ fn get_len(source: &str) -> usize {
 
 fn main() {
     let args = Args::parse();
+
     let mut parser = Parser::new();
     extern "C" {
         fn tree_sitter_query() -> Language;
@@ -50,13 +52,74 @@ fn main() {
     let language = unsafe { tree_sitter_query() };
     parser.set_language(language).unwrap();
 
-    let mut file = File::open(args.file.clone()).expect("Unable to open the file");
+    let path = Path::new(&args.file).to_owned();
+    if path.is_file() {
+        // let file = File::open(path).expect("Unable to open the file");
+        format_file(&path, parser, args);
+    } else if path.is_dir() {
+        let languages = read_dir(path).unwrap();
+        for language in languages {
+            let language = language.unwrap().path();
+            if language.is_dir() {
+                let files = read_dir(language.as_path()).unwrap();
+                for file_path in files {
+                    let file_path = file_path.unwrap();
+                    // let path = file_path.unwrap().path().as_path();
+                    if file_path
+                        .path()
+                        .as_path()
+                        .parent()
+                        .unwrap()
+                        .parent()
+                        .unwrap()
+                        == Path::new("queries")
+                    {
+                        println!("{:?}", file_path.path().as_path());
+                        let args = Args::parse();
+
+                        let mut parser = Parser::new();
+                        extern "C" {
+                            fn tree_sitter_query() -> Language;
+                        }
+
+                        let language = unsafe { tree_sitter_query() };
+                        parser.set_language(language).unwrap();
+                        // let file = File::open(file_path.path().as_path())
+                        //     .expect("Unable to open the file");
+                        format_file(file_path.path().as_path(), parser, args);
+                    }
+                }
+            } else {
+                let file_path = language;
+                if file_path.is_file() {
+                    let file_path = file_path.as_path();
+                    if file_path.parent().unwrap().parent().unwrap() == Path::new("queries") {
+                        println!("{:?}", file_path);
+                        let args = Args::parse();
+
+                        let mut parser = Parser::new();
+                        extern "C" {
+                            fn tree_sitter_query() -> Language;
+                        }
+
+                        let language = unsafe { tree_sitter_query() };
+                        parser.set_language(language).unwrap();
+                        // let file = File::open(file_path).expect("Unable to open the file");
+                        format_file(file_path, parser, args);
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn format_file(path: &Path, mut parser: Parser, args: Args) {
+    let mut file = File::open(path).expect("Unable to open the file");
     let mut contents = String::new();
     file.read_to_string(&mut contents)
         .expect("Unable to read the file");
     let source_code = &contents;
     let original_len = get_len(&source_code);
-
     let tree = parser.parse(source_code, None).unwrap();
     let mut comment_before = false;
     let mut output = String::new();
@@ -154,8 +217,12 @@ Open an issue."
         if args.preview {
             println!("{output}");
         } else if !args.preview {
-            let mut new_file = File::create(args.file).expect("Unable to open the file");
+            let mut new_file = File::create(path).expect("Unable to open the file");
             writeln!(&mut new_file, "{}", output).unwrap();
+            // match file.write(output.as_bytes()) {
+            //     Ok(..) => {}
+            //     Err(e) => println!("{:#?}", e),
+            // }
         }
     }
 }

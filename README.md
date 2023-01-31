@@ -6,10 +6,10 @@
 ### Implemented
 - Format `*.scm` files
 - Print out formatted file
+- Format complete directories
 
 ### Planned
 - Directly modify file
-- Format complete directories
 - Configuration
 
 ## 📦 Installation
@@ -30,3 +30,7 @@
 
 ## 🚀 Usage
 You can use `query-fmt <file>` to format the file.
+With the `--preview` flag the file won't be changed.
+The formatted version will just be printed out.
+
+You can also use either a `queries` folder or a folder for a specific language inside such a folder (e.g. `queries/lua/`) to format all the files inside the folder.

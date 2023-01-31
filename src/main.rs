@@ -54,7 +54,6 @@ fn main() {
 
     let path = Path::new(&args.file).to_owned();
     if path.is_file() {
-        // let file = File::open(path).expect("Unable to open the file");
         format_file(&path, parser, args);
     } else if path.is_dir() {
         let languages = read_dir(path).unwrap();
@@ -84,8 +83,6 @@ fn main() {
 
                         let language = unsafe { tree_sitter_query() };
                         parser.set_language(language).unwrap();
-                        // let file = File::open(file_path.path().as_path())
-                        //     .expect("Unable to open the file");
                         format_file(file_path.path().as_path(), parser, args);
                     }
                 }
@@ -94,7 +91,7 @@ fn main() {
                 if file_path.is_file() {
                     let file_path = file_path.as_path();
                     if file_path.parent().unwrap().parent().unwrap() == Path::new("queries") {
-                        println!("{:?}", file_path);
+                        println!("{file_path:?}");
                         let args = Args::parse();
 
                         let mut parser = Parser::new();
@@ -104,7 +101,6 @@ fn main() {
 
                         let language = unsafe { tree_sitter_query() };
                         parser.set_language(language).unwrap();
-                        // let file = File::open(file_path).expect("Unable to open the file");
                         format_file(file_path, parser, args);
                     }
                 }
@@ -119,7 +115,7 @@ fn format_file(path: &Path, mut parser: Parser, args: Args) {
     file.read_to_string(&mut contents)
         .expect("Unable to read the file");
     let source_code = &contents;
-    let original_len = get_len(&source_code);
+    let original_len = get_len(source_code);
     let tree = parser.parse(source_code, None).unwrap();
     let mut comment_before = false;
     let mut output = String::new();
@@ -213,17 +209,11 @@ fn format_file(path: &Path, mut parser: Parser, args: Args) {
 Not applying formatting.
 Open an issue."
         );
-    } else {
-        if args.preview {
-            println!("{output}");
-        } else if !args.preview {
-            let mut new_file = File::create(path).expect("Unable to open the file");
-            writeln!(&mut new_file, "{}", output).unwrap();
-            // match file.write(output.as_bytes()) {
-            //     Ok(..) => {}
-            //     Err(e) => println!("{:#?}", e),
-            // }
-        }
+    } else if args.preview {
+        println!("{output}");
+    } else if !args.preview {
+        let mut new_file = File::create(path).expect("Unable to open the file");
+        writeln!(&mut new_file, "{output}").unwrap();
     }
 }
 

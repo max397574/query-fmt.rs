@@ -65,21 +65,8 @@ fn main() {
     let mut nesting_level = 0;
     let mut indent_level = 0;
     while !reached_root {
-        match cursor.node().kind() {
-            "(" => {
-                indent_level += 2;
-            }
-            ")" => {
-                indent_level -= 2;
-            }
-            "[" => {
-                indent_level += 1;
-            }
-            "]" => {
-                indent_level -= 1;
-            }
-            _ => {}
-        }
+        adapt_indent_level(&cursor, &mut indent_level);
+
         match cursor.node().kind() {
             "field_definition" => {
                 output.push('\n');
@@ -109,10 +96,7 @@ fn main() {
             output.push(' ');
         }
 
-        if cursor.node().kind() == "anonymous_node" && check_parent("list", cursor.node()) {
-            output.push('\n');
-            output.push_str(&" ".repeat(indent_level));
-        }
+        indent_list_contents(&cursor, &mut output, indent_level);
 
         if cursor.node().kind() == "]" && check_parent("list", cursor.node()) {
             output.push('\n');
@@ -128,32 +112,17 @@ fn main() {
             output.push_str(&" ".repeat(indent_level));
         }
 
-        if check_parent("parameters", cursor.node()) {
-            output.push(' ')
-        }
+        add_spacing_around_parameters(&cursor, &mut output);
 
         if check_parent("named_node", cursor.node()) && cursor.node().kind() == "named_node" {
             output.push('\n');
             output.push_str(&" ".repeat(indent_level));
         }
 
-        if cursor.node().child_count() == 0 && cursor.node().kind() != "\""
-            || cursor.node().kind() == "string"
-        {
-            output.push_str(cursor.node().utf8_text(source_code.as_bytes()).unwrap());
-        }
-        if cursor.node().kind() == "anonymous_node" && check_parent("list", cursor.node()) {
-            output.push_str(cursor.node().utf8_text(source_code.as_bytes()).unwrap());
-        }
-        if cursor.node().kind() == "identifier"
-            && check_parent("anonymous_node", cursor.node())
-            && !check_parent("list", cursor.node().parent().unwrap())
-        {
-            output.push_str(cursor.node().utf8_text(source_code.as_bytes()).unwrap());
-        }
-        if cursor.node().kind() == ":" {
-            output.push(' ');
-        }
+        push_text_to_output(&cursor, &mut output, source_code);
+
+        add_space_after_colon(&cursor, &mut output);
+
         if cursor.goto_first_child() {
             nesting_level += 1;
             continue;
@@ -174,6 +143,7 @@ fn main() {
             }
         }
     }
+    output = output.trim().to_owned();
     if get_len(&output) != original_len {
         println!(
             "There was an error parsing your code.
@@ -185,7 +155,71 @@ Open an issue."
             println!("{output}");
         } else if !args.preview {
             let mut new_file = File::create(args.file).expect("Unable to open the file");
-            writeln!(&mut new_file, "{}", output.trim()).unwrap();
+            writeln!(&mut new_file, "{}", output).unwrap();
         }
+    }
+}
+
+fn add_spacing_around_parameters(cursor: &tree_sitter::TreeCursor, output: &mut String) {
+    if check_parent("parameters", cursor.node()) {
+        output.push(' ')
+    }
+}
+
+fn push_text_to_output(
+    cursor: &tree_sitter::TreeCursor,
+    output: &mut String,
+    source_code: &String,
+) {
+    if cursor.node().child_count() == 0 && cursor.node().kind() != "\""
+        || cursor.node().kind() == "string"
+    {
+        output.push_str(cursor.node().utf8_text(source_code.as_bytes()).unwrap());
+    }
+    // Directly add list item text
+    if cursor.node().kind() == "anonymous_node" && check_parent("list", cursor.node()) {
+        output.push_str(cursor.node().utf8_text(source_code.as_bytes()).unwrap());
+    }
+    if cursor.node().kind() == "identifier"
+        && check_parent("anonymous_node", cursor.node())
+        // Don't add list item text twice
+        && !check_parent("list", cursor.node().parent().unwrap())
+    {
+        output.push_str(cursor.node().utf8_text(source_code.as_bytes()).unwrap());
+    }
+}
+
+fn add_space_after_colon(cursor: &tree_sitter::TreeCursor, output: &mut String) {
+    if cursor.node().kind() == ":" {
+        output.push(' ');
+    }
+}
+
+fn adapt_indent_level(cursor: &tree_sitter::TreeCursor, indent_level: &mut usize) {
+    match cursor.node().kind() {
+        "(" => {
+            *indent_level += 2;
+        }
+        ")" => {
+            *indent_level -= 2;
+        }
+        "[" => {
+            *indent_level += 1;
+        }
+        "]" => {
+            *indent_level -= 1;
+        }
+        _ => {}
+    }
+}
+
+fn indent_list_contents(
+    cursor: &tree_sitter::TreeCursor,
+    output: &mut String,
+    indent_level: usize,
+) {
+    if cursor.node().kind() == "anonymous_node" && check_parent("list", cursor.node()) {
+        output.push('\n');
+        output.push_str(&" ".repeat(indent_level));
     }
 }

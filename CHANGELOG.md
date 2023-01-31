@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.0](https://github.com/max397574/query-fmt.rs/compare/v1.3.0...v1.4.0) (2023-01-31)
+
+
+### Features
+
+* actually modify the file ([6ada11b](https://github.com/max397574/query-fmt.rs/commit/6ada11b0e35af1df9e42aa24a04de167d43025d4))
+* added preview option ([a821e3f](https://github.com/max397574/query-fmt.rs/commit/a821e3f2dbfb11b0ea328724a226173245241718))
+* allow whole directories to be formatted ([daa8f4a](https://github.com/max397574/query-fmt.rs/commit/daa8f4a0ea00ddfccf4dd8c83d37a051be233a90))
+* only indent lists with one space ([988c2e3](https://github.com/max397574/query-fmt.rs/commit/988c2e3634a321236e3f03fc2523339bfb9e2a95))
+
+
+### Bug Fixes
+
+* trim text ([7cf3ee1](https://github.com/max397574/query-fmt.rs/commit/7cf3ee1a2e5625ff6b9a26a0674f1c3f76e76300))
+
 ## [1.3.0](https://github.com/max397574/query-fmt.rs/compare/v1.2.0...v1.3.0) (2023-01-09)
 
 

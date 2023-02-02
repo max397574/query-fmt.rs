@@ -275,7 +275,9 @@ fn indent_list_contents(
     output: &mut String,
     indent_level: usize,
 ) {
-    if cursor.node().kind() == "anonymous_node" && check_parent("list", cursor.node()) {
+    if (cursor.node().kind() == "anonymous_node" || cursor.node().kind() == "named_node")
+        && check_parent("list", cursor.node())
+    {
         output.push('\n');
         output.push_str(&" ".repeat(indent_level));
     }

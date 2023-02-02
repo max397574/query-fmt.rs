@@ -2,7 +2,7 @@ use tree_sitter::{Language, Node, Parser};
 
 use std::fs::{read_dir, File};
 use std::io::prelude::*;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use clap::Parser as ClapParser;
 
@@ -12,7 +12,7 @@ use clap::Parser as ClapParser;
 struct Args {
     /// Name of the file to format
     #[arg(value_name = "file")]
-    file: String,
+    file: PathBuf,
 
     /// If you want to use a custom config file
     #[arg(long)]
@@ -54,7 +54,7 @@ fn main() {
 
     let path = Path::new(&args.file).to_owned();
     if path.is_file() {
-        format_file(&path, parser, args);
+        format_file(&path, parser, &args);
     } else if path.is_dir() {
         let languages = read_dir(path).unwrap();
         for language in languages {
@@ -74,7 +74,7 @@ fn main() {
                         == Path::new("queries")
                     {
                         println!("{:?}", file_path.path().as_path());
-                        let args = Args::parse();
+                        // let args = Args::parse();
 
                         let mut parser = Parser::new();
                         extern "C" {
@@ -83,7 +83,7 @@ fn main() {
 
                         let language = unsafe { tree_sitter_query() };
                         parser.set_language(language).unwrap();
-                        format_file(file_path.path().as_path(), parser, args);
+                        format_file(file_path.path().as_path(), parser, &args);
                     }
                 }
             } else {
@@ -92,7 +92,7 @@ fn main() {
                     let file_path = file_path.as_path();
                     if file_path.parent().unwrap().parent().unwrap() == Path::new("queries") {
                         println!("{file_path:?}");
-                        let args = Args::parse();
+                        // let args = Args::parse();
 
                         let mut parser = Parser::new();
                         extern "C" {
@@ -101,7 +101,7 @@ fn main() {
 
                         let language = unsafe { tree_sitter_query() };
                         parser.set_language(language).unwrap();
-                        format_file(file_path, parser, args);
+                        format_file(file_path, parser, &args);
                     }
                 }
             }
@@ -109,7 +109,7 @@ fn main() {
     }
 }
 
-fn format_file(path: &Path, mut parser: Parser, args: Args) {
+fn format_file(path: &Path, mut parser: Parser, args: &Args) {
     let mut file = File::open(path).expect("Unable to open the file");
     let mut contents = String::new();
     file.read_to_string(&mut contents)

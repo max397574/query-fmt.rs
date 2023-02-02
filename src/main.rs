@@ -228,6 +228,9 @@ fn push_text_to_output(
     output: &mut String,
     source_code: &String,
 ) {
+    if cursor.node().kind() == "escape_sequence" {
+        return;
+    }
     if cursor.node().child_count() == 0 && cursor.node().kind() != "\""
         || cursor.node().kind() == "string"
     {

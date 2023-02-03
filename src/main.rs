@@ -52,10 +52,8 @@ impl Iterator for RecursiveFileIterator {
             if let Ok(metadata) = entry.metadata() {
                 if metadata.is_dir() {
                     if let Ok(dir) = read_dir(entry.path()) {
-                        for sub_entry in dir {
-                            if let Ok(sub_entry) = sub_entry {
-                                self.stack.push(sub_entry);
-                            }
+                        for sub_entry in dir.flatten() {
+                            self.stack.push(sub_entry);
                         }
                     }
                 }
@@ -82,10 +80,8 @@ fn main() {
         format_file(&path, parser, &args);
     } else if path.is_dir() {
         let mut stack = Vec::new();
-        for subdir in read_dir(path).unwrap() {
-            if let Ok(subdir) = subdir {
-                stack.push(subdir);
-            }
+        for subdir in read_dir(path).unwrap().flatten() {
+            stack.push(subdir);
         }
         let rec_iterator = RecursiveFileIterator { stack };
         for file in rec_iterator {

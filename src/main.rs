@@ -1,6 +1,6 @@
 use tree_sitter::{Language, Node, Parser};
 
-use std::fs::{read_dir, File};
+use std::fs::{read_dir, DirEntry, File};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
@@ -41,6 +41,31 @@ fn get_len(source: &str) -> usize {
         .len()
 }
 
+struct RecursiveFileIterator {
+    stack: Vec<DirEntry>,
+}
+
+impl Iterator for RecursiveFileIterator {
+    type Item = DirEntry;
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(entry) = self.stack.pop() {
+            if let Ok(metadata) = entry.metadata() {
+                if metadata.is_dir() {
+                    if let Ok(dir) = read_dir(entry.path()) {
+                        for sub_entry in dir {
+                            if let Ok(sub_entry) = sub_entry {
+                                self.stack.push(sub_entry);
+                            }
+                        }
+                    }
+                }
+                return Some(entry);
+            }
+        }
+        None
+    }
+}
+
 fn main() {
     let args = Args::parse();
 
@@ -56,53 +81,21 @@ fn main() {
     if path.is_file() {
         format_file(&path, parser, &args);
     } else if path.is_dir() {
-        let languages = read_dir(path).unwrap();
-        for language in languages {
-            let language = language.unwrap().path();
-            if language.is_dir() {
-                let files = read_dir(language.as_path()).unwrap();
-                for file_path in files {
-                    let file_path = file_path.unwrap();
-                    // let path = file_path.unwrap().path().as_path();
-                    if file_path
-                        .path()
-                        .as_path()
-                        .parent()
-                        .unwrap()
-                        .parent()
-                        .unwrap()
-                        == Path::new("queries")
-                    {
-                        println!("{:?}", file_path.path().as_path());
-                        // let args = Args::parse();
-
-                        let mut parser = Parser::new();
-                        extern "C" {
-                            fn tree_sitter_query() -> Language;
-                        }
-
-                        let language = unsafe { tree_sitter_query() };
-                        parser.set_language(language).unwrap();
-                        format_file(file_path.path().as_path(), parser, &args);
-                    }
-                }
-            } else {
-                let file_path = language;
-                if file_path.is_file() {
-                    let file_path = file_path.as_path();
-                    if file_path.parent().unwrap().parent().unwrap() == Path::new("queries") {
-                        println!("{file_path:?}");
-                        // let args = Args::parse();
-
-                        let mut parser = Parser::new();
-                        extern "C" {
-                            fn tree_sitter_query() -> Language;
-                        }
-
-                        let language = unsafe { tree_sitter_query() };
-                        parser.set_language(language).unwrap();
-                        format_file(file_path, parser, &args);
-                    }
+        let mut stack = Vec::new();
+        for subdir in read_dir(path).unwrap() {
+            if let Ok(subdir) = subdir {
+                stack.push(subdir);
+            }
+        }
+        let rec_iterator = RecursiveFileIterator { stack };
+        for file in rec_iterator {
+            let path = file.path();
+            if let Some(extension) = path.extension() {
+                if extension == "scm" {
+                    let mut parser = Parser::new();
+                    let language = unsafe { tree_sitter_query() };
+                    parser.set_language(language).unwrap();
+                    format_file(path.as_path(), parser, &args)
                 }
             }
         }

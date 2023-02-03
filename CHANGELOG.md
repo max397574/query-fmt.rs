@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.1](https://github.com/max397574/query-fmt.rs/compare/v1.4.0...v1.4.1) (2023-02-03)
+
+
+### Bug Fixes
+
+* fix lists with named nodes ([2c2ab5c](https://github.com/max397574/query-fmt.rs/commit/2c2ab5c18afcceb7b2a6bc8aa4492d2dfff8f699))
+* make it work with escape sequences ([b577bb2](https://github.com/max397574/query-fmt.rs/commit/b577bb25c822d397b5d243641b108ed51b24b7e9))
+
 ## [1.4.0](https://github.com/max397574/query-fmt.rs/compare/v1.3.0...v1.4.0) (2023-01-31)
 
 

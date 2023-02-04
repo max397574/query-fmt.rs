@@ -24,21 +24,15 @@ struct Args {
 }
 
 fn check_parent(parent_kind: &str, node: Node) -> bool {
-    let parent = node.parent();
-    if let Some(parent_node) = parent {
-        if parent_node.kind() == parent_kind {
-            return true;
-        }
-    }
-    false
+    node.parent()
+        .map_or(false, |parent_node| parent_node.kind() == parent_kind)
 }
 
 fn get_len(source: &str) -> usize {
     source
         .chars()
         .filter(|char| char != &'\n' && char != &' ' && char != &'\t' && char != &'\r')
-        .collect::<Vec<char>>()
-        .len()
+        .count()
 }
 
 struct RecursiveFileIterator {
@@ -48,17 +42,12 @@ struct RecursiveFileIterator {
 impl Iterator for RecursiveFileIterator {
     type Item = DirEntry;
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(entry) = self.stack.pop() {
-            if let Ok(metadata) = entry.metadata() {
-                if metadata.is_dir() {
-                    if let Ok(dir) = read_dir(entry.path()) {
-                        for sub_entry in dir.flatten() {
-                            self.stack.push(sub_entry);
-                        }
-                    }
-                }
-                return Some(entry);
+        let entry = self.stack.pop()?;
+        if entry.metadata().ok()?.is_dir() {
+            for sub_entry in read_dir(entry.path()).ok()?.flatten() {
+                self.stack.push(sub_entry);
             }
+            return Some(entry);
         }
         None
     }
@@ -100,6 +89,7 @@ fn main() {
 
 fn format_file(path: &Path, mut parser: Parser, args: &Args) {
     let mut file = File::open(path).expect("Unable to open the file");
+    println!("File: {}", path.display());
     let mut contents = String::new();
     file.read_to_string(&mut contents)
         .expect("Unable to read the file");

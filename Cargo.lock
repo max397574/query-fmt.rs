@@ -270,11 +270,11 @@ dependencies = [
 name = "query-fmt"
 version = "1.1.0"
 dependencies = [
- "cc",
  "clap",
  "flate2",
  "tar",
  "tree-sitter",
+ "tree-sitter-query",
  "winreg",
  "zip",
 ]
@@ -404,6 +404,15 @@ checksum = "d4423c784fe11398ca91e505cdc71356b07b1a924fc8735cfab5333afe3e18bc"
 dependencies = [
  "cc",
  "regex",
+]
+
+[[package]]
+name = "tree-sitter-query"
+version = "0.0.1"
+source = "git+https://github.com/nvim-treesitter/tree-sitter-query#0717de07078a20a8608c98ad5f26c208949d0e15"
+dependencies = [
+ "cc",
+ "tree-sitter",
 ]
 
 [[package]]

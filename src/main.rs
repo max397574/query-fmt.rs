@@ -1,13 +1,13 @@
 use clap::Parser as ClapParser;
-use tree_sitter::{Language, Parser};
+use tree_sitter::Parser;
 
 use std::fs::read_dir;
 use std::path::Path;
 
-mod query_tree;
 mod args;
 mod file_iterator;
 mod format;
+mod query_tree;
 
 use args::Args;
 use file_iterator::RecursiveFileIterator;
@@ -17,12 +17,8 @@ fn main() {
     let args = Args::parse();
 
     let mut parser = Parser::new();
-    extern "C" {
-        fn tree_sitter_query() -> Language;
-    }
 
-    let language = unsafe { tree_sitter_query() };
-    parser.set_language(language).unwrap();
+    parser.set_language(tree_sitter_query::language()).unwrap();
 
     let path = Path::new(&args.file).to_owned();
     if path.is_file() {
@@ -38,8 +34,7 @@ fn main() {
             if let Some(extension) = path.extension() {
                 if extension == "scm" {
                     let mut parser = Parser::new();
-                    let language = unsafe { tree_sitter_query() };
-                    parser.set_language(language).unwrap();
+                    parser.set_language(tree_sitter_query::language()).unwrap();
                     format_file(path.as_path(), parser, &args)
                 }
             }

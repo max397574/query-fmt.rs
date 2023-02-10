@@ -4,6 +4,7 @@ use tree_sitter::{Language, Parser};
 use std::fs::read_dir;
 use std::path::Path;
 
+mod query_tree;
 mod args;
 mod file_iterator;
 mod format;

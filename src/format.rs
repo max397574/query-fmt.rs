@@ -19,15 +19,8 @@ fn get_len(source: &str) -> usize {
         .count()
 }
 
-pub fn format_file(path: &Path, mut parser: Parser, args: &Args) {
-    let mut file = File::open(path).expect("Unable to open the file");
-    println!("File: {}", path.display());
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)
-        .expect("Unable to read the file");
-    let source_code = &contents;
-    let original_len = get_len(source_code);
-    let tree = parser.parse(source_code, None).unwrap();
+pub fn format_string(contents: &String, mut parser: Parser) -> String {
+    let tree = parser.parse(contents, None).unwrap();
     let mut comment_before = false;
     let mut output = String::new();
     let mut query_tree = QueryTree {
@@ -91,11 +84,23 @@ pub fn format_file(path: &Path, mut parser: Parser, args: &Args) {
             output.push_str(&" ".repeat(indent_level));
         }
 
-        push_text_to_output(&node, &mut output, source_code);
+        push_text_to_output(&node, &mut output, contents);
 
         add_space_after_colon(&node, &mut output);
     }
     output = output.trim().to_owned();
+    output
+}
+
+pub fn format_file(path: &Path, parser: Parser, args: &Args) {
+    let mut file = File::open(path).expect("Unable to open the file");
+    println!("File: {}", path.display());
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)
+        .expect("Unable to read the file");
+    let source_code = &contents;
+    let original_len = get_len(source_code);
+    let output = format_string(source_code, parser);
     if get_len(&output) != original_len {
         println!(
             "There was an error parsing your code.
@@ -116,11 +121,7 @@ fn add_spacing_around_parameters(node: &tree_sitter::Node, output: &mut String) 
     }
 }
 
-fn push_text_to_output(
-    node: &tree_sitter::Node,
-    output: &mut String,
-    source_code: &String,
-) {
+fn push_text_to_output(node: &tree_sitter::Node, output: &mut String, source_code: &String) {
     if node.kind() == "escape_sequence" {
         return;
     }

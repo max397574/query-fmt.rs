@@ -15,10 +15,6 @@ use format::format_file;
 fn main() {
     let args = Args::parse();
 
-    let mut parser = Parser::new();
-
-    parser.set_language(tree_sitter_query::language()).unwrap();
-
     let path = Path::new(&args.file).to_owned();
     let rec_iterator = RecursiveFileIterator::new(path);
     for file in rec_iterator {

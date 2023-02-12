@@ -1,5 +1,9 @@
 use std::fs::read_dir;
 use std::path::PathBuf;
+use tree_sitter::Parser;
+
+use crate::args::Args;
+use crate::format::format_file;
 
 pub struct RecursiveFileIterator {
     pub stack: Vec<PathBuf>,
@@ -16,6 +20,17 @@ impl RecursiveFileIterator {
             }
         }
         Self { stack }
+    }
+    pub fn format(self, args: &Args) {
+        for file in self {
+            if let Some(extension) = file.extension() {
+                if extension == "scm" {
+                    let mut parser = Parser::new();
+                    parser.set_language(tree_sitter_query::language()).unwrap();
+                    format_file(file.as_path(), parser, args)
+                }
+            }
+        }
     }
 }
 

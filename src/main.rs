@@ -13,7 +13,5 @@ use file_iterator::RecursiveFileIterator;
 fn main() {
     let args = Args::parse();
 
-    let path = Path::new(&args.file).to_owned();
-    let rec_iterator = RecursiveFileIterator::new(path);
-    rec_iterator.format(&args);
+    RecursiveFileIterator::new(Path::new(&args.file).to_owned()).format(&args);
 }

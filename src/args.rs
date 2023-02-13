@@ -10,7 +10,7 @@ pub struct Args {
     pub file: PathBuf,
 
     /// Preview the formatted file
-    #[arg(short, long)]
+    #[arg(short, long, default_value_t = false)]
     pub preview: bool,
 
     /// Indent of nested things

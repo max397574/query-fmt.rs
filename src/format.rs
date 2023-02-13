@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
-use crate::args::Args;
+use crate::config::Config;
 use crate::query_tree::QueryTree;
 
 fn check_parent(parent_kind: &str, node: &Node) -> bool {
@@ -19,7 +19,7 @@ fn get_len(source: &str) -> usize {
         .count()
 }
 
-pub fn format_string(contents: &String, mut parser: Parser, args: &Args) -> String {
+pub fn format_string(contents: &String, mut parser: Parser, config: &Config) -> String {
     let tree = parser.parse(contents, None).unwrap();
     let mut comment_before = false;
     let mut output = String::new();
@@ -30,7 +30,7 @@ pub fn format_string(contents: &String, mut parser: Parser, args: &Args) -> Stri
     };
     let mut indent_level = 0;
     for (node, nesting_level) in &mut query_tree {
-        adapt_indent_level(&node, &mut indent_level, args);
+        adapt_indent_level(&node, &mut indent_level, config);
 
         match node.kind() {
             "field_definition" => {
@@ -93,23 +93,23 @@ pub fn format_string(contents: &String, mut parser: Parser, args: &Args) -> Stri
     output.trim().to_owned()
 }
 
-pub fn format_file(path: &Path, parser: Parser, args: &Args) {
+pub fn format_file(path: &Path, parser: Parser, config: &Config) {
     let mut contents = String::new();
     println!("File: {}", path.display());
     File::open(path)
         .expect("Unable to open the file")
         .read_to_string(&mut contents)
         .expect("Unable to read the file");
-    let output = format_string(&contents, parser, args);
+    let output = format_string(&contents, parser, config);
     if get_len(&output) != get_len(&contents) {
         println!(
             "There was an error parsing your code.
 Not applying formatting.
 Open an issue."
         );
-    } else if args.preview {
+    } else if config.should_preview() {
         println!("{output}");
-    } else if !args.preview {
+    } else {
         let mut new_file = File::create(path).expect("Unable to open the file");
         writeln!(&mut new_file, "{output}").unwrap();
     }
@@ -147,19 +147,19 @@ fn add_space_after_colon(node: &tree_sitter::Node, output: &mut String) {
     }
 }
 
-fn adapt_indent_level(node: &Node, indent_level: &mut usize, args: &Args) {
+fn adapt_indent_level(node: &Node, indent_level: &mut usize, config: &Config) {
     match node.kind() {
         "(" => {
-            *indent_level += args.indent;
+            *indent_level += config.get_indent();
         }
         ")" => {
-            *indent_level -= args.indent;
+            *indent_level -= config.get_indent();
         }
         "[" => {
-            *indent_level += args.list_indent;
+            *indent_level += config.get_list_indent();
         }
         "]" => {
-            *indent_level -= args.list_indent;
+            *indent_level -= config.get_list_indent();
         }
         _ => {}
     }
@@ -173,3 +173,28 @@ fn indent_list_contents(node: &tree_sitter::Node, output: &mut String, indent_le
         output.push_str(&" ".repeat(indent_level));
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     use tree_sitter::Parser;
+//
+//     #[test]
+//     fn list() {
+//         let mut parser = Parser::new();
+//         parser.set_language(tree_sitter_query::language()).unwrap();
+//
+//         let input = String::from("[\"(\" \")\" \"[\" \"]\" \"{\" \"}\"]  @punctuation.bracket");
+//         assert_eq!(
+//             format_string(&input, parser, args),
+//             "[
+//  \"(\"
+//  \")\"
+//  \"[\"
+//  \"]\"
+//  \"{\"
+//  \"}\"
+// ] @punctuation.bracket"
+//         )
+//     }
+// }

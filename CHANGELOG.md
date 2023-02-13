@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/max397574/query-fmt.rs/compare/v1.5.0...v1.5.1) (2023-02-13)
+
+
+### Bug Fixes
+
+* **format:** don't add empty lines after commands and small refactors ([3b90028](https://github.com/max397574/query-fmt.rs/commit/3b90028160426636b0459a5ec365196f8fb3dd17))
+
 ## [1.5.0](https://github.com/max397574/query-fmt.rs/compare/v1.4.1...v1.5.0) (2023-02-13)
 
 

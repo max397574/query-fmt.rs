@@ -30,7 +30,7 @@ pub fn format_string(contents: &String, mut parser: Parser, args: &Args) -> Stri
     };
     let mut indent_level = 0;
     for (node, nesting_level) in &mut query_tree {
-        adapt_indent_level(&node, &mut indent_level, &args);
+        adapt_indent_level(&node, &mut indent_level, args);
 
         match node.kind() {
             "field_definition" => {
@@ -102,7 +102,7 @@ pub fn format_file(path: &Path, parser: Parser, args: &Args) {
         .expect("Unable to read the file");
     let source_code = &contents;
     let original_len = get_len(source_code);
-    let output = format_string(source_code, parser, &args);
+    let output = format_string(source_code, parser, args);
     if get_len(&output) != original_len {
         println!(
             "There was an error parsing your code.

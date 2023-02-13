@@ -19,7 +19,7 @@ fn get_len(source: &str) -> usize {
         .count()
 }
 
-pub fn format_string(contents: &String, mut parser: Parser) -> String {
+pub fn format_string(contents: &String, mut parser: Parser, args: &Args) -> String {
     let tree = parser.parse(contents, None).unwrap();
     let mut comment_before = false;
     let mut output = String::new();
@@ -30,7 +30,7 @@ pub fn format_string(contents: &String, mut parser: Parser) -> String {
     };
     let mut indent_level = 0;
     for (node, nesting_level) in &mut query_tree {
-        adapt_indent_level(&node, &mut indent_level);
+        adapt_indent_level(&node, &mut indent_level, &args);
 
         match node.kind() {
             "field_definition" => {
@@ -79,7 +79,9 @@ pub fn format_string(contents: &String, mut parser: Parser) -> String {
 
         add_spacing_around_parameters(&node, &mut output);
 
-        if check_parent("named_node", &node) && node.kind() == "named_node" {
+        if check_parent("named_node", &node)
+            && (node.kind() == "named_node" || node.kind() == "list")
+        {
             output.push('\n');
             output.push_str(&" ".repeat(indent_level));
         }
@@ -100,7 +102,7 @@ pub fn format_file(path: &Path, parser: Parser, args: &Args) {
         .expect("Unable to read the file");
     let source_code = &contents;
     let original_len = get_len(source_code);
-    let output = format_string(source_code, parser);
+    let output = format_string(source_code, parser, &args);
     if get_len(&output) != original_len {
         println!(
             "There was an error parsing your code.
@@ -147,19 +149,19 @@ fn add_space_after_colon(node: &tree_sitter::Node, output: &mut String) {
     }
 }
 
-fn adapt_indent_level(node: &Node, indent_level: &mut usize) {
+fn adapt_indent_level(node: &Node, indent_level: &mut usize, args: &Args) {
     match node.kind() {
         "(" => {
-            *indent_level += 2;
+            *indent_level += args.indent;
         }
         ")" => {
-            *indent_level -= 2;
+            *indent_level -= args.indent;
         }
         "[" => {
-            *indent_level += 1;
+            *indent_level += args.list_indent;
         }
         "]" => {
-            *indent_level -= 1;
+            *indent_level -= args.list_indent;
         }
         _ => {}
     }

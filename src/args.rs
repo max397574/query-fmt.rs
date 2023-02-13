@@ -9,11 +9,15 @@ pub struct Args {
     #[arg(value_name = "file")]
     pub file: PathBuf,
 
-    /// If you want to use a custom config file
-    #[arg(long)]
-    config_file: Option<String>,
-
     /// Preview the formatted file
     #[arg(short, long)]
     pub preview: bool,
+
+    /// Indent of nested things
+    #[arg(short, long, default_value_t = 2)]
+    pub indent: usize,
+
+    /// Indent of list items
+    #[arg(short, long, default_value_t = 1)]
+    pub list_indent: usize,
 }

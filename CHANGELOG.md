@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0](https://github.com/max397574/query-fmt.rs/compare/v1.4.1...v1.5.0) (2023-02-13)
+
+
+### Features
+
+* add config values for (list) indent ([f0dfb10](https://github.com/max397574/query-fmt.rs/commit/f0dfb10727865503155bd10080a653c8b4237b68))
+
+
+### Bug Fixes
+
+* remove not needed references ([eaaa6ab](https://github.com/max397574/query-fmt.rs/commit/eaaa6abc98baf7d682f8ce442fee845f612cb1c2))
+
 ## [1.4.1](https://github.com/max397574/query-fmt.rs/compare/v1.4.0...v1.4.1) (2023-02-03)
 
 

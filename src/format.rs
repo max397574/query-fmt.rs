@@ -46,16 +46,16 @@ pub fn format_string(contents: &String, mut parser: Parser, args: &Args) -> Stri
         if node.kind() == "comment" && !comment_before {
             output.push('\n');
         }
+        if nesting_level == 1 {
+            output.push('\n');
+            if !comment_before {
+                output.push('\n');
+            }
+        }
         if node.kind() == "comment" {
             comment_before = true;
         } else {
             comment_before = false;
-        }
-        if nesting_level == 1 {
-            output.push('\n');
-            if node.kind() != "comment" {
-                output.push('\n');
-            }
         }
         if node.kind() == "capture" && !check_parent("parameters", &node) {
             output.push(' ');
@@ -90,20 +90,18 @@ pub fn format_string(contents: &String, mut parser: Parser, args: &Args) -> Stri
 
         add_space_after_colon(&node, &mut output);
     }
-    output = output.trim().to_owned();
-    output
+    output.trim().to_owned()
 }
 
 pub fn format_file(path: &Path, parser: Parser, args: &Args) {
-    let mut file = File::open(path).expect("Unable to open the file");
-    println!("File: {}", path.display());
     let mut contents = String::new();
-    file.read_to_string(&mut contents)
+    println!("File: {}", path.display());
+    File::open(path)
+        .expect("Unable to open the file")
+        .read_to_string(&mut contents)
         .expect("Unable to read the file");
-    let source_code = &contents;
-    let original_len = get_len(source_code);
-    let output = format_string(source_code, parser, args);
-    if get_len(&output) != original_len {
+    let output = format_string(&contents, parser, args);
+    if get_len(&output) != get_len(&contents) {
         println!(
             "There was an error parsing your code.
 Not applying formatting.

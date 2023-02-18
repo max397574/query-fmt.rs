@@ -13,6 +13,10 @@ pub struct Args {
     #[arg(short, long, default_value_t = false)]
     pub preview: bool,
 
+    /// Don't print filename in output
+    #[arg(long, default_value_t = false)]
+    pub no_print_filename: bool,
+
     /// Indent of nested things
     #[arg(short, long, default_value_t = 2)]
     pub indent: usize,

@@ -95,7 +95,9 @@ pub fn format_string(contents: &String, mut parser: Parser, config: &Config) -> 
 
 pub fn format_file(path: &Path, parser: Parser, config: &Config) {
     let mut contents = String::new();
-    println!("File: {}", path.display());
+    if config.should_print_filename() {
+        println!("File: {}", path.display());
+    }
     File::open(path)
         .expect("Unable to open the file")
         .read_to_string(&mut contents)

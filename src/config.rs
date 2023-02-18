@@ -4,6 +4,9 @@ pub struct Config {
     /// Preview the formatted file
     preview: bool,
 
+    /// Print filename in output
+    print_filename: bool,
+
     /// Indent of nested things
     indent: usize,
 
@@ -17,11 +20,16 @@ impl Config {
             preview: args.preview,
             indent: args.indent,
             list_indent: args.list_indent,
+            print_filename: !args.no_print_filename,
         }
     }
 
     pub fn should_preview(&self) -> bool {
         self.preview
+    }
+
+    pub fn should_print_filename(&self) -> bool {
+        self.print_filename
     }
 
     pub fn get_indent(&self) -> usize {

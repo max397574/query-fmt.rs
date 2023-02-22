@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.0](https://github.com/max397574/query-fmt.rs/compare/v1.5.1...v1.6.0) (2023-02-22)
+
+
+### Features
+
+* **args:** add option to not print filename ([c1a0465](https://github.com/max397574/query-fmt.rs/commit/c1a0465a35c968de8eb4d3b63c0089f6048abcaa))
+* extract config into `Config` struct ([daf94fb](https://github.com/max397574/query-fmt.rs/commit/daf94fbb71ccbfda61af6db0a0aecfb21374c69e))
+
 ## [1.5.1](https://github.com/max397574/query-fmt.rs/compare/v1.5.0...v1.5.1) (2023-02-13)
 
 

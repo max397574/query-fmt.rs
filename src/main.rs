@@ -7,6 +7,7 @@ mod file_iterator;
 mod format;
 mod query_tree;
 mod config;
+mod node_item;
 
 use args::Args;
 use file_iterator::RecursiveFileIterator;

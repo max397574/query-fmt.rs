@@ -1,11 +1,11 @@
 use tree_sitter::Node;
 
-pub struct NodeItem<'a> {
+pub struct NestedNode<'a> {
     node: Node<'a>,
     nesting_level: u8,
 }
 
-impl<'a> NodeItem<'a> {
+impl<'a> NestedNode<'a> {
     pub fn new(node: Node<'a>, nesting_level: u8) -> Self {
         Self {
             node,

@@ -1,8 +1,7 @@
-use clap::Parser as ClapParser;
 use std::path::PathBuf;
 
 /// A formatter for tree-sitter queries
-#[derive(ClapParser, Debug)]
+#[derive(clap::Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
     /// Name of the file or directory to format

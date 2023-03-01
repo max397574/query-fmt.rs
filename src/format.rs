@@ -19,6 +19,12 @@ fn get_len(source: &str) -> usize {
         .count()
 }
 
+fn add_indent(output: &mut String, indent_level: usize) {
+    for _ in 0..indent_level {
+        output.push(' ');
+    }
+}
+
 pub fn format_string(contents: &String, mut parser: Parser, config: &Config) -> String {
     let tree = parser.parse(contents, None).unwrap();
     let mut comment_before = false;
@@ -35,11 +41,11 @@ pub fn format_string(contents: &String, mut parser: Parser, config: &Config) -> 
         match node_item.kind() {
             "field_definition" => {
                 output.push('\n');
-                output.push_str(&" ".repeat(indent_level));
+                add_indent(&mut output, indent_level);
             }
             "predicate" => {
                 output.push('\n');
-                output.push_str(&" ".repeat(indent_level));
+                add_indent(&mut output, indent_level);
             }
             _ => {}
         }
@@ -52,11 +58,8 @@ pub fn format_string(contents: &String, mut parser: Parser, config: &Config) -> 
                 output.push('\n');
             }
         }
-        if node_item.kind() == "comment" {
-            comment_before = true;
-        } else {
-            comment_before = false;
-        }
+        comment_before = node_item.kind() == "comment";
+
         if node_item.kind() == "capture" && !node_item.parent_equals("parameters") {
             output.push(' ');
         }
@@ -65,7 +68,7 @@ pub fn format_string(contents: &String, mut parser: Parser, config: &Config) -> 
 
         if node_item.kind() == "]" && node_item.parent_equals("list") {
             output.push('\n');
-            output.push_str(&" ".repeat(indent_level));
+            add_indent(&mut output, indent_level);
         }
 
         if node_item.kind() == "identifier"
@@ -74,7 +77,7 @@ pub fn format_string(contents: &String, mut parser: Parser, config: &Config) -> 
             && !node_item.parent_equals("grouping")
         {
             output.push('\n');
-            output.push_str(&" ".repeat(indent_level));
+            add_indent(&mut output, indent_level);
         }
 
         add_spacing_around_parameters(&node_item.node(), &mut output);
@@ -83,7 +86,7 @@ pub fn format_string(contents: &String, mut parser: Parser, config: &Config) -> 
             && (node_item.kind() == "named_node" || node_item.kind() == "list")
         {
             output.push('\n');
-            output.push_str(&" ".repeat(indent_level));
+            add_indent(&mut output, indent_level);
         }
 
         push_text_to_output(&node_item.node(), &mut output, contents);
@@ -172,6 +175,6 @@ fn indent_list_contents(node: &tree_sitter::Node, output: &mut String, indent_le
         && check_parent("list", node)
     {
         output.push('\n');
-        output.push_str(&" ".repeat(indent_level));
+        add_indent(output, indent_level);
     }
 }

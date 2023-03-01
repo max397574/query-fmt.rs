@@ -1,4 +1,4 @@
-use tree_sitter::Node;
+use crate::node_item::NodeItem;
 use tree_sitter::TreeCursor;
 
 pub struct QueryTree<'a> {
@@ -7,17 +7,17 @@ pub struct QueryTree<'a> {
     pub nesting_level: u8,
 }
 impl<'a> Iterator for &mut QueryTree<'a> {
-    type Item = (Node<'a>, u8);
+    type Item = NodeItem<'a>;
     fn next(&mut self) -> Option<Self::Item> {
         if self.reached_root {
             return None;
         }
         if self.cursor.goto_first_child() {
             self.nesting_level += 1;
-            return Some((self.cursor.node(), self.nesting_level));
+            return Some(NodeItem::new(self.cursor.node(), self.nesting_level));
         }
         if self.cursor.goto_next_sibling() {
-            return Some((self.cursor.node(), self.nesting_level));
+            return Some(NodeItem::new(self.cursor.node(), self.nesting_level));
         }
         let mut retracing = true;
         while retracing {
@@ -31,6 +31,6 @@ impl<'a> Iterator for &mut QueryTree<'a> {
                 retracing = false;
             }
         }
-        Some((self.cursor.node(), self.nesting_level))
+        Some(NodeItem::new(self.cursor.node(), self.nesting_level))
     }
 }

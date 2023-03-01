@@ -32,11 +32,11 @@ impl Config {
         self.print_filename
     }
 
-    pub fn get_indent(&self) -> usize {
+    pub fn indent(&self) -> usize {
         self.indent
     }
 
-    pub fn get_list_indent(&self) -> usize {
+    pub fn list_indent(&self) -> usize {
         self.list_indent
     }
 }

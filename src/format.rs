@@ -29,10 +29,10 @@ pub fn format_string(contents: &String, mut parser: Parser, config: &Config) -> 
         nesting_level: 0,
     };
     let mut indent_level = 0;
-    for (node, nesting_level) in &mut query_tree {
-        adapt_indent_level(&node, &mut indent_level, config);
+    for node_item in &mut query_tree {
+        adapt_indent_level(&node_item.node(), &mut indent_level, config);
 
-        match node.kind() {
+        match node_item.kind() {
             "field_definition" => {
                 output.push('\n');
                 output.push_str(&" ".repeat(indent_level));
@@ -43,52 +43,52 @@ pub fn format_string(contents: &String, mut parser: Parser, config: &Config) -> 
             }
             _ => {}
         }
-        if node.kind() == "comment" && !comment_before {
+        if node_item.kind() == "comment" && !comment_before {
             output.push('\n');
         }
-        if nesting_level == 1 {
+        if node_item.nesting_level() == 1 {
             output.push('\n');
             if !comment_before {
                 output.push('\n');
             }
         }
-        if node.kind() == "comment" {
+        if node_item.kind() == "comment" {
             comment_before = true;
         } else {
             comment_before = false;
         }
-        if node.kind() == "capture" && !check_parent("parameters", &node) {
+        if node_item.kind() == "capture" && !node_item.parent_equals("parameters") {
             output.push(' ');
         }
 
-        indent_list_contents(&node, &mut output, indent_level);
+        indent_list_contents(&node_item.node(), &mut output, indent_level);
 
-        if node.kind() == "]" && check_parent("list", &node) {
+        if node_item.kind() == "]" && node_item.parent_equals("list") {
             output.push('\n');
             output.push_str(&" ".repeat(indent_level));
         }
 
-        if node.kind() == "identifier"
-            && check_parent("anonymous_node", &node)
-            && !check_parent("list", &node.parent().unwrap())
-            && !check_parent("grouping", &node.parent().unwrap())
+        if node_item.kind() == "identifier"
+            && node_item.parent_equals("anonymous_node")
+            && !node_item.parent_equals("list")
+            && !node_item.parent_equals("grouping")
         {
             output.push('\n');
             output.push_str(&" ".repeat(indent_level));
         }
 
-        add_spacing_around_parameters(&node, &mut output);
+        add_spacing_around_parameters(&node_item.node(), &mut output);
 
-        if check_parent("named_node", &node)
-            && (node.kind() == "named_node" || node.kind() == "list")
+        if node_item.parent_equals("named_node")
+            && (node_item.kind() == "named_node" || node_item.kind() == "list")
         {
             output.push('\n');
             output.push_str(&" ".repeat(indent_level));
         }
 
-        push_text_to_output(&node, &mut output, contents);
+        push_text_to_output(&node_item.node(), &mut output, contents);
 
-        add_space_after_colon(&node, &mut output);
+        add_space_after_colon(&node_item.node(), &mut output);
     }
     output.trim().to_owned()
 }
@@ -152,16 +152,16 @@ fn add_space_after_colon(node: &tree_sitter::Node, output: &mut String) {
 fn adapt_indent_level(node: &Node, indent_level: &mut usize, config: &Config) {
     match node.kind() {
         "(" => {
-            *indent_level += config.get_indent();
+            *indent_level += config.indent();
         }
         ")" => {
-            *indent_level -= config.get_indent();
+            *indent_level -= config.indent();
         }
         "[" => {
-            *indent_level += config.get_list_indent();
+            *indent_level += config.list_indent();
         }
         "]" => {
-            *indent_level -= config.get_list_indent();
+            *indent_level -= config.list_indent();
         }
         _ => {}
     }
@@ -175,28 +175,3 @@ fn indent_list_contents(node: &tree_sitter::Node, output: &mut String, indent_le
         output.push_str(&" ".repeat(indent_level));
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use tree_sitter::Parser;
-//
-//     #[test]
-//     fn list() {
-//         let mut parser = Parser::new();
-//         parser.set_language(tree_sitter_query::language()).unwrap();
-//
-//         let input = String::from("[\"(\" \")\" \"[\" \"]\" \"{\" \"}\"]  @punctuation.bracket");
-//         assert_eq!(
-//             format_string(&input, parser, args),
-//             "[
-//  \"(\"
-//  \")\"
-//  \"[\"
-//  \"]\"
-//  \"{\"
-//  \"}\"
-// ] @punctuation.bracket"
-//         )
-//     }
-// }

@@ -4,13 +4,9 @@
 
 ## ✨ Features
 ### Implemented
-- Format `*.scm` files
-- Print out formatted file
-- Format complete directories
-
-### Planned
-- Directly modify file
-- Configuration
+- Automatically format single files or directory
+- Configurable with cli-flags
+- Option to only preview file
 
 ## 📦 Installation
 ### Download release (coming soon)
@@ -29,8 +25,15 @@
 4. Run with `./target/release/query-fmt`
 
 ## 🚀 Usage
-You can use `query-fmt <file>` to format the file.
-With the `--preview` flag the file won't be changed.
-The formatted version will just be printed out.
+Usage: query-fmt [OPTIONS] <file>
 
-You can also use either a `queries` folder or a folder for a specific language inside such a folder (e.g. `queries/lua/`) to format all the files inside the folder.
+Arguments:
+  <file>  Name of the file to format
+
+Options:
+  -p, --preview                    Preview the formatted file
+      --no-print-filename          Don't print filename in output
+  -i, --indent <INDENT>            Indent of nested things [default: 2]
+  -l, --list-indent <LIST_INDENT>  Indent of list items [default: 1]
+  -h, --help                       Print help
+  -V, --version                    Print version

@@ -25,10 +25,13 @@
 4. Run with `./target/release/query-fmt`
 
 ## 🚀 Usage
+```
+A formatter for tree-sitter queries
+
 Usage: query-fmt [OPTIONS] <file>
 
 Arguments:
-  <file>  Name of the file to format
+  <file>  Name of the file or directory to format
 
 Options:
   -p, --preview                    Preview the formatted file
@@ -37,3 +40,4 @@ Options:
   -l, --list-indent <LIST_INDENT>  Indent of list items [default: 1]
   -h, --help                       Print help
   -V, --version                    Print version
+```

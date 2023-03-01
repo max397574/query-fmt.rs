@@ -5,7 +5,7 @@ use std::path::PathBuf;
 #[derive(ClapParser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
-    /// Name of the file to format
+    /// Name of the file or directory to format
     #[arg(value_name = "file")]
     pub file: PathBuf,
 

@@ -5,6 +5,8 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "A formatter for tree-sitter queries"
 include = ["src", "tree-sitter-query"]
+repository = "https://github.com/max397574/query-fmt.rs"
+homepage = "https://github.com/max397574/query-fmt.rs"
 
 [[bin]]
 name = "query-fmt"
@@ -13,7 +15,7 @@ path = "src/main.rs"
 [dependencies]
 clap = { version = "4.1.4", features = ["derive"] }
 tree-sitter = "0.20.9"
-tree-sitter-query = { git = "https://github.com/nvim-treesitter/tree-sitter-query" }
+tree-sitter-query = "0.1.0"
 
 [target.'cfg(windows)'.dependencies]
 zip = "0.5"

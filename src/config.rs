@@ -2,41 +2,27 @@ use crate::args::Args;
 
 pub struct Config {
     /// Preview the formatted file
-    preview: bool,
+    pub preview: bool,
 
     /// Print filename in output
-    print_filename: bool,
+    pub print_filename: bool,
 
-    /// Indent of nested things
-    indent: usize,
+    pub indent_len: usize,
 
-    /// Indent of list items
-    list_indent: usize,
+    pub indent_lists_len: i32,
+
+    pub list_indent: usize,
 }
 
 impl Config {
-    pub fn new(args: &Args) -> Self {
+    #[must_use]
+    pub const fn new(args: &Args) -> Self {
         Self {
             preview: args.preview,
-            indent: args.indent,
+            indent_len: args.indent_len,
             list_indent: args.list_indent,
+            indent_lists_len: args.indent_lists_len,
             print_filename: !args.no_print_filename,
         }
-    }
-
-    pub fn should_preview(&self) -> bool {
-        self.preview
-    }
-
-    pub fn should_print_filename(&self) -> bool {
-        self.print_filename
-    }
-
-    pub fn indent(&self) -> usize {
-        self.indent
-    }
-
-    pub fn list_indent(&self) -> usize {
-        self.list_indent
     }
 }

@@ -27,7 +27,7 @@ impl RecursiveFileIterator {
                 if extension == "scm" {
                     let mut parser = Parser::new();
                     parser.set_language(tree_sitter_query::language()).unwrap();
-                    format_file(file.as_path(), parser, config)
+                    format_file(file.as_path(), parser, config);
                 }
             }
         }

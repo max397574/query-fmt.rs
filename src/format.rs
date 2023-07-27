@@ -1,180 +1,236 @@
-use tree_sitter::{Node, Parser};
-
+use core::fmt::Write as _;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
+use tree_sitter::{Node, Parser};
+
 use crate::config::Config;
+use crate::node_item::NodeExt;
 use crate::query_tree::QueryTree;
 
-fn check_parent(parent_kind: &str, node: &Node) -> bool {
-    node.parent()
-        .map_or(false, |parent_node| parent_node.kind() == parent_kind)
+macro_rules! add {
+    ($this: tt, $($arg: tt)*) => {{
+        dbg!("add");
+        $this.buffer.write_fmt(format_args!($($arg)*)).unwrap();
+    }}
 }
 
-fn get_len(source: &str) -> usize {
-    source
-        .chars()
-        .filter(|char| char != &'\n' && char != &' ' && char != &'\t' && char != &'\r')
-        .count()
+macro_rules! add_whitespace {
+    ($this: tt) => {{
+        for _ in 0..$this.indent_level {
+            write!(&mut $this.buffer, " ").unwrap();
+        }
+    }};
 }
 
-fn add_indent(output: &mut String, indent_level: usize) {
-    for _ in 0..indent_level {
-        output.push(' ');
+macro_rules! add_line {
+    ($this: tt, $($arg: tt)*) => {
+        dbg!("add_line");
+        add_whitespace!($this);
+        $this.buffer.write_fmt(format_args!($($arg)*)).unwrap();
+        $this.buffer += "\n";
     }
 }
 
-pub fn format_string(contents: &String, mut parser: Parser, config: &Config) -> String {
-    let tree = parser.parse(contents, None).unwrap();
-    let mut comment_before = false;
-    let mut output = String::new();
-    let mut query_tree = QueryTree {
-        cursor: tree.walk(),
-        reached_root: false,
-        nesting_level: 0,
+macro_rules! indent {
+    ($this: tt) => {
+        dbg!("indent");
+        $this.indent_level += $this.indent_multiplier;
     };
-    let mut indent_level = 0;
-    for node_item in &mut query_tree {
-        adapt_indent_level(&node_item.node(), &mut indent_level, config);
+}
 
-        match node_item.kind() {
-            "field_definition" => {
-                output.push('\n');
-                add_indent(&mut output, indent_level);
+macro_rules! dedent {
+    ($this: tt) => {
+        assert_ne!($this.indent_level, 0);
+        $this.indent_level -= $this.indent_multiplier;
+    };
+}
+
+struct Formatter {
+    buffer: String,
+    input: String,
+    parser: Parser,
+    indent_level: usize,
+    indent_multiplier: usize,
+    min_list_len: usize,
+    list_indent_multiplier: i32,
+    remove_current_grouping: bool,
+}
+
+impl Formatter {
+    #[must_use]
+    pub fn new(config: &Config, parser: Parser, source_code: String) -> Self {
+        Self {
+            buffer: String::new(),
+            input: source_code,
+            parser,
+            indent_level: 0,
+            indent_multiplier: config.indent_len,
+            min_list_len: config.list_indent,
+            list_indent_multiplier: config.indent_lists_len,
+            remove_current_grouping: false,
+        }
+    }
+
+    fn adjust_indent_level(&mut self, node: &Node) {
+        match node.kind() {
+            "(" => {
+                indent!(self);
             }
-            "predicate" => {
-                output.push('\n');
-                add_indent(&mut output, indent_level);
+            ")" => {
+                dedent!(self);
+            }
+            "[" => {
+                indent!(self);
+            }
+            "]" if node.parent_eq("list") => {
+                dedent!(self);
             }
             _ => {}
         }
-        if node_item.kind() == "comment" && !comment_before {
-            output.push('\n');
-        }
-        if node_item.nesting_level() == 1 {
-            output.push('\n');
-            if !comment_before {
-                output.push('\n');
-            }
-        }
-        comment_before = node_item.kind() == "comment";
-
-        if node_item.kind() == "capture" && !node_item.parent_equals("parameters") {
-            output.push(' ');
-        }
-
-        indent_list_contents(&node_item.node(), &mut output, indent_level);
-
-        if node_item.kind() == "]" && node_item.parent_equals("list") {
-            output.push('\n');
-            add_indent(&mut output, indent_level);
-        }
-
-        if node_item.kind() == "identifier"
-            && node_item.parent_equals("anonymous_node")
-            && !node_item.parent_equals("list")
-            && !node_item.parent_equals("grouping")
-        {
-            output.push('\n');
-            add_indent(&mut output, indent_level);
-        }
-
-        add_spacing_around_parameters(&node_item.node(), &mut output);
-
-        if node_item.parent_equals("named_node")
-            && (node_item.kind() == "named_node" || node_item.kind() == "list")
-        {
-            output.push('\n');
-            add_indent(&mut output, indent_level);
-        }
-
-        push_text_to_output(&node_item.node(), &mut output, contents);
-
-        add_space_after_colon(&node_item.node(), &mut output);
     }
-    output.trim().to_owned()
+
+    fn indent_list_contents(&mut self, node: &Node) {
+        if (node.kind() == "anonymous_node" || node.kind() == "named_node")
+            && node.parent_eq("list")
+            && node.prev_named_sibling().is_none()
+        // only add a newline for the first list item
+        {
+            add_line!(self, "");
+        }
+    }
+
+    fn push_text_to_output(&mut self, node: &Node) {
+        if node.kind() == "escape_sequence" {
+            return;
+        }
+
+        let text = node.utf8_text(self.input.as_bytes()).unwrap();
+        let is_anon = node.next_named_sibling().map(|node| node.kind()) == Some("anonymous_node");
+
+        // Do not write groupings with an anonymous node, ("foo")
+        if text == "(" && is_anon {
+            self.remove_current_grouping = true;
+        }
+
+        if !self.remove_current_grouping && node.child_count() == 0 && node.kind() != "\""
+            || node.kind() == "string"
+        {
+            add!(self, "{text}");
+        }
+
+        // Restore groupings after ")" detected
+        if text == ")" && self.remove_current_grouping {
+            self.remove_current_grouping = false;
+        }
+
+        // Directly add list item text
+        if node.kind() == "anonymous_node" && node.parent_eq("list") {
+            add_line!(self, "{}", node.utf8_text(self.input.as_bytes()).unwrap());
+        }
+
+        if node.kind() == "identifier"
+        && node.parent_eq("anonymous_node")
+        // Don't add list item text twice
+        && !node.grandparent_eq("list")
+        {
+            add!(self, "{}", node.utf8_text(self.input.as_bytes()).unwrap());
+        }
+    }
+
+    fn add_spacing_around_parameters(&mut self, node: &Node) {
+        if node.parent_eq("parameters") {
+            add!(self, " ");
+        }
+    }
+
+    fn add_space_after_colon(&mut self, node: &Node) {
+        if node.kind() == ":" {
+            add!(self, " ");
+        }
+    }
+
+    pub fn format(mut self) -> String {
+        let tree = self.parser.parse(&self.input, None).unwrap();
+        let mut comment_before = false;
+        let mut query_tree = QueryTree {
+            cursor: tree.walk(),
+            reached_root: false,
+            nesting_level: 0,
+            first_node: true,
+        };
+
+        for node in &mut query_tree {
+            // println!("[0]self.buffer={}", self.buffer);
+            self.adjust_indent_level(&node.inner);
+
+            if matches!(node.kind(), "comment" | "comment_block") {
+                add_line!(self, "");
+                println!("1");
+                indent!(self);
+            }
+            if node.kind() == "comment" && !comment_before {
+                add_line!(self, "");
+            }
+            if node.nesting_level == 1 && !node.first_node {
+                add_line!(self, "");
+                if !comment_before {
+                    add_line!(self, "");
+                }
+            }
+
+            comment_before = node.kind() == "comment";
+
+            if node.kind() == "capture" && !node.parent_eq("parameters") {
+                add!(self, " ");
+            }
+
+            self.indent_list_contents(&node.inner);
+
+            if node.kind() == "identifier"
+                && node.parent_eq("anonymous_node")
+                && !node.grandparent_eq("list")
+                && !node.grandparent_eq("grouping")
+            {
+                // TODO: ??
+                // add_line!(self, "");
+                // indent!(self);
+            }
+
+            self.add_spacing_around_parameters(&node.inner);
+
+            if node.parent_eq("named_node")
+                && (node.kind() == "named_node" || node.kind() == "list")
+            {
+                add_line!(self, "");
+                println!("4");
+                indent!(self);
+            }
+
+            self.push_text_to_output(&node.inner);
+
+            self.add_space_after_colon(&node.inner);
+        }
+
+        self.buffer
+    }
 }
 
 pub fn format_file(path: &Path, parser: Parser, config: &Config) {
-    let mut contents = String::new();
-    if config.should_print_filename() {
+    if config.print_filename {
         println!("File: {}", path.display());
     }
-    File::open(path)
-        .expect("Unable to open the file")
-        .read_to_string(&mut contents)
-        .expect("Unable to read the file");
-    let output = format_string(&contents, parser, config);
-    if get_len(&output) != get_len(&contents) {
-        println!(
-            "There was an error parsing your code.
-Not applying formatting.
-Open an issue."
-        );
-    } else if config.should_preview() {
+    let source_code = std::fs::read_to_string(path).expect("Unable to read the file");
+    let formatter = Formatter::new(config, parser, source_code);
+    let output = formatter.format();
+    if config.preview {
         println!("{output}");
     } else {
         let mut new_file = File::create(path).expect("Unable to open the file");
-        writeln!(&mut new_file, "{output}").unwrap();
-    }
-}
-
-fn add_spacing_around_parameters(node: &tree_sitter::Node, output: &mut String) {
-    if check_parent("parameters", node) {
-        output.push(' ')
-    }
-}
-
-fn push_text_to_output(node: &tree_sitter::Node, output: &mut String, source_code: &String) {
-    if node.kind() == "escape_sequence" {
-        return;
-    }
-    if node.child_count() == 0 && node.kind() != "\"" || node.kind() == "string" {
-        output.push_str(node.utf8_text(source_code.as_bytes()).unwrap());
-    }
-    // Directly add list item text
-    if node.kind() == "anonymous_node" && check_parent("list", node) {
-        output.push_str(node.utf8_text(source_code.as_bytes()).unwrap());
-    }
-    if node.kind() == "identifier"
-        && check_parent("anonymous_node", node)
-        // Don't add list item text twice
-        && !check_parent("list", &node.parent().unwrap())
-    {
-        output.push_str(node.utf8_text(source_code.as_bytes()).unwrap());
-    }
-}
-
-fn add_space_after_colon(node: &tree_sitter::Node, output: &mut String) {
-    if node.kind() == ":" {
-        output.push(' ');
-    }
-}
-
-fn adapt_indent_level(node: &Node, indent_level: &mut usize, config: &Config) {
-    match node.kind() {
-        "(" => {
-            *indent_level += config.indent();
-        }
-        ")" => {
-            *indent_level -= config.indent();
-        }
-        "[" => {
-            *indent_level += config.list_indent();
-        }
-        "]" => {
-            *indent_level -= config.list_indent();
-        }
-        _ => {}
-    }
-}
-
-fn indent_list_contents(node: &tree_sitter::Node, output: &mut String, indent_level: usize) {
-    if (node.kind() == "anonymous_node" || node.kind() == "named_node")
-        && check_parent("list", node)
-    {
-        output.push('\n');
-        add_indent(output, indent_level);
+        // writeln!(&mut new_file, "{output}").unwrap();
+        new_file
+            .write_all(output.as_bytes())
+            .expect("Unable to write to the file");
     }
 }

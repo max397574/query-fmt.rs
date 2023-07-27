@@ -18,7 +18,13 @@ pub struct Args {
 
     /// Indent of nested things
     #[arg(short, long, default_value_t = 2)]
-    pub indent: usize,
+    pub indent_len: usize,
+
+    /// Line length threshold to indent lists, default 120
+    /// Setting this to 0 always indents lists
+    /// Setting this to a negative number never indents lists
+    #[arg(long, default_value_t = 120)]
+    pub indent_lists_len: i32,
 
     /// Indent of list items
     #[arg(short, long, default_value_t = 1)]

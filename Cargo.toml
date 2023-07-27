@@ -13,8 +13,9 @@ name = "query-fmt"
 path = "src/main.rs"
 
 [dependencies]
-clap = { version = "4.1.4", features = ["derive"] }
-tree-sitter = "0.20.9"
+clap = { version = "4.3.19", features = ["derive"] }
+extend = "1.2.0"
+tree-sitter = "0.20.10"
 tree-sitter-query = "0.1.0"
 
 [target.'cfg(windows)'.dependencies]
@@ -22,8 +23,8 @@ zip = "0.5"
 winreg = "0.10.1"
 
 [target.'cfg(unix)'.dependencies]
-tar = "0.4"
-flate2 = "1.0"
+tar = "0.4.39"
+flate2 = "1.0.26"
 
 [profile.optimized]
 inherits = "release"
